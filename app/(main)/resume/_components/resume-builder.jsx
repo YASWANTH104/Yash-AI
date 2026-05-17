@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -69,7 +69,7 @@ export default function ResumeBuilder({ initialContent }) {
       const newContent = getCombinedContent();
       setPreviewContent(newContent ? newContent : initialContent);
     }
-  }, [formValues, activeTab]);
+  }, [getCombinedContent, activeTab, initialContent]);
 
   // Handle save result
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function ResumeBuilder({ initialContent }) {
     }
   }, [saveResult, saveError, isSaving]);
 
-  const getContactMarkdown = () => {
+  const getContactMarkdown = useCallback(() => {
     const { contactInfo } = formValues;
     const parts = [];
     if (contactInfo.email) parts.push(`📧 ${contactInfo.email}`);
@@ -94,9 +94,9 @@ export default function ResumeBuilder({ initialContent }) {
       ? `## <div align="center">${user.fullName}</div>
         \n\n<div align="center">\n\n${parts.join(" | ")}\n\n</div>`
       : "";
-  };
+  }, [formValues, user.fullName]);
 
-  const getCombinedContent = () => {
+  const getCombinedContent = useCallback(() => {
     const { summary, skills, experience, education, projects } = formValues;
     return [
       getContactMarkdown(),
@@ -108,7 +108,7 @@ export default function ResumeBuilder({ initialContent }) {
     ]
       .filter(Boolean)
       .join("\n\n");
-  };
+  }, [formValues, getContactMarkdown]);
 
   const [isGenerating, setIsGenerating] = useState(false);
 
